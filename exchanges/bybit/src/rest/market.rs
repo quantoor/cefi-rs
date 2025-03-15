@@ -95,33 +95,31 @@ pub struct OrderbookResponse {
     pub cross_seq: i64,
 }
 
-pub async fn get_server_time(client: &BybitHttp) -> BybitResult<ServerTimeResponse> {
-    client
-        .send_get_request::<ServerTimeResponse>("v5/market/time", HashMap::new(), false)
-        .await
-}
+impl BybitHttp {
+    pub async fn get_server_time(&self) -> BybitResult<ServerTimeResponse> {
+        self.send_get_request::<ServerTimeResponse>("v5/market/time", HashMap::new(), false)
+            .await
+    }
 
-pub async fn get_instruments_info(
-    client: &BybitHttp,
-    category: String,
-) -> BybitResult<InstrumentsInfoResponse> {
-    client
-        .send_get_request::<InstrumentsInfoResponse>(
+    pub async fn get_instruments_info(
+        &self,
+        category: String,
+    ) -> BybitResult<InstrumentsInfoResponse> {
+        self.send_get_request::<InstrumentsInfoResponse>(
             "v5/market/instruments-info",
             HashMap::from([("category", category.as_str())]),
             false,
         )
         .await
-}
+    }
 
-pub async fn get_orderbook(
-    client: &BybitHttp,
-    category: String,
-    symbol: String,
-    limit: i32,
-) -> BybitResult<OrderbookResponse> {
-    client
-        .send_get_request::<OrderbookResponse>(
+    pub async fn get_orderbook(
+        &self,
+        category: String,
+        symbol: String,
+        limit: i32,
+    ) -> BybitResult<OrderbookResponse> {
+        self.send_get_request::<OrderbookResponse>(
             "v5/market/orderbook",
             HashMap::from([
                 ("category", category.as_str()),
@@ -131,15 +129,16 @@ pub async fn get_orderbook(
             false,
         )
         .await
-}
+    }
 
-pub async fn get_tickers(client: &BybitHttp) -> BybitResult<GetTickersResponse> {
-    let mut params = HashMap::new();
-    params.insert("category", "linear");
-
-    client
-        .send_get_request::<GetTickersResponse>("v5/market/tickers", params, false)
+    pub async fn get_tickers(&self) -> BybitResult<GetTickersResponse> {
+        self.send_get_request::<GetTickersResponse>(
+            "v5/market/tickers",
+            HashMap::from([("category", "linear")]),
+            false,
+        )
         .await
+    }
 }
 
 #[cfg(test)]
@@ -149,28 +148,30 @@ mod tests {
     #[tokio::test]
     async fn test_get_server_time() {
         let client = BybitHttp::new("".to_string(), "".to_string());
-        let res = get_server_time(&client).await;
+        let res = client.get_server_time().await;
         println!("{:?}", res);
     }
 
     #[tokio::test]
     async fn test_get_instruments_info() {
         let client = BybitHttp::new("".to_string(), "".to_string());
-        let res = get_instruments_info(&client, "linear".to_string()).await;
+        let res = client.get_instruments_info("linear".to_string()).await;
         println!("{:?}", res);
     }
 
     #[tokio::test]
     async fn test_get_orderbook() {
         let client = BybitHttp::new("".to_string(), "".to_string());
-        let res = get_orderbook(&client, "linear".to_string(), "BTCUSDT".to_string(), 5).await;
+        let res = client
+            .get_orderbook("linear".to_string(), "BTCUSDT".to_string(), 5)
+            .await;
         println!("{:?}", res);
     }
 
     #[tokio::test]
     async fn test_get_tickers() {
         let client = BybitHttp::new("".to_string(), "".to_string());
-        let res = get_tickers(&client).await;
+        let res = client.get_tickers().await;
         println!("{:?}", res);
     }
 }

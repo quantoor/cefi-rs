@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use bybit::{http::BybitHttp, rest::market::get_server_time, rest::market::OrderbookResponse};
+use bybit::{http::BybitHttp, rest::market::OrderbookResponse};
 
 use crate::{
     interface_http::InterfaceHttp,
@@ -7,13 +7,13 @@ use crate::{
 };
 
 pub struct BybitHttpWrapper {
-    http: BybitHttp,
+    client: BybitHttp,
 }
 
 impl BybitHttpWrapper {
     pub fn new(api_key: String, api_secret: String) -> Self {
         Self {
-            http: BybitHttp::new(api_key, api_secret),
+            client: BybitHttp::new(api_key, api_secret),
         }
     }
 }
@@ -21,7 +21,9 @@ impl BybitHttpWrapper {
 #[async_trait]
 impl InterfaceHttp for BybitHttpWrapper {
     async fn get_server_time(&self) -> anyhow::Result<u64> {
-        let server_time = get_server_time(&self.http)
+        let server_time = self
+            .client
+            .get_server_time()
             .await
             .map_err(|e| anyhow::anyhow!("{}", e))?;
 
@@ -35,14 +37,15 @@ impl InterfaceHttp for BybitHttpWrapper {
         symbol: &String,
         limit: Option<i32>,
     ) -> anyhow::Result<Orderbook> {
-        let orderbook = bybit::rest::market::get_orderbook(
-            &self.http,
-            "linear".to_string(),
-            symbol.to_string(),
-            limit.unwrap_or(10),
-        )
-        .await
-        .map_err(|e| anyhow::anyhow!("{}", e))?;
+        let orderbook = self
+            .client
+            .get_orderbook(
+                "linear".to_string(),
+                symbol.to_string(),
+                limit.unwrap_or(10),
+            )
+            .await
+            .map_err(|e| anyhow::anyhow!("{}", e))?;
 
         Ok(Orderbook::from_bybit_orderbook(
             orderbook,

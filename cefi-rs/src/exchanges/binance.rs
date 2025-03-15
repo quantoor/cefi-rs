@@ -4,20 +4,16 @@ use crate::{
     types::{Orderbook, OrderbookLevel},
 };
 use async_trait::async_trait;
-use binance::{
-    http::BinanceHttp,
-    rest::market::{check_server_time, get_orderbook},
-    types::OrderBook as BinanceOrderBook,
-};
+use binance::{http::BinanceHttp, types::OrderBook as BinanceOrderBook};
 
 pub struct BinanceHttpWrapper {
-    http: BinanceHttp,
+    client: BinanceHttp,
 }
 
 impl BinanceHttpWrapper {
     pub fn new(api_key: String, api_secret: String) -> Self {
         Self {
-            http: BinanceHttp::new(api_key, api_secret),
+            client: BinanceHttp::new(api_key, api_secret),
         }
     }
 }
@@ -25,7 +21,9 @@ impl BinanceHttpWrapper {
 #[async_trait]
 impl InterfaceHttp for BinanceHttpWrapper {
     async fn get_server_time(&self) -> anyhow::Result<u64> {
-        let server_time = check_server_time(&self.http)
+        let server_time = self
+            .client
+            .check_server_time()
             .await
             .map_err(|e| anyhow::anyhow!("{}", e))?;
         Ok(server_time.server_time)
@@ -36,7 +34,9 @@ impl InterfaceHttp for BinanceHttpWrapper {
         symbol: &String,
         limit: Option<i32>,
     ) -> anyhow::Result<Orderbook> {
-        let orderbook = get_orderbook(&self.http, symbol, limit)
+        let orderbook = self
+            .client
+            .get_orderbook(symbol, limit)
             .await
             .map_err(|e| anyhow::anyhow!("{}", e))?;
 
