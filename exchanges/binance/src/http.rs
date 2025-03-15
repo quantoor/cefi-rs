@@ -47,11 +47,14 @@ impl BinanceHttp {
 
         let response = self
             .client
-            .get(format!("{}/{}", BINANCE_HOST_HOST, endpoint))
+            .get(&format!("{}/{}?{}", BINANCE_HOST_HOST, endpoint, query_str))
             .send()
             .await?;
         let body = response.text().await?;
-        Ok(serde_json::from_str::<T>(&body)?)
+        match serde_json::from_str::<T>(&body) {
+            Ok(res) => Ok(res),
+            Err(e) => Err(anyhow::anyhow!("{:?} {:?}", body, e)),
+        }
     }
 
     // fn generate_get_signature(

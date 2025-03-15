@@ -1,8 +1,13 @@
 use async_trait::async_trait;
 
+use crate::types::Orderbook;
+
 #[async_trait]
 pub trait InterfaceHttp {
     async fn get_server_time(&self) -> anyhow::Result<u64>;
+
+    async fn get_orderbook(&self, symbol: &String, limit: Option<i32>)
+    -> anyhow::Result<Orderbook>;
 }
 
 #[cfg(test)]
