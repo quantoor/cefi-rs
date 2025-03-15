@@ -20,3 +20,29 @@ impl BybitHttp {
             .await
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use dotenv::dotenv;
+
+    #[tokio::test]
+    async fn test_get_wallet_balance() {
+        dotenv().ok();
+        let api_key = std::env::var("BYBIT_API_KEY").expect("BYBIT_API_KEY");
+        let api_secret = std::env::var("BYBIT_API_SECRET").expect("BYBIT_API_SECRET");
+        let client = BybitHttp::new(api_key, api_secret);
+        let balance = client.get_wallet_balance().await.unwrap();
+        println!("{:?}", balance);
+    }
+
+    #[tokio::test]
+    async fn test_get_account_info() {
+        dotenv().ok();
+        let api_key = std::env::var("BYBIT_API_KEY").expect("BYBIT_API_KEY");
+        let api_secret = std::env::var("BYBIT_API_SECRET").expect("BYBIT_API_SECRET");
+        let client = BybitHttp::new(api_key, api_secret);
+        let account_info = client.get_account_info().await.unwrap();
+        println!("{:?}", account_info);
+    }
+}

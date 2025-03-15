@@ -13,3 +13,20 @@ impl BybitHttp {
             .await
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use dotenv::dotenv;
+
+    #[tokio::test]
+    async fn test_get_positions() -> BybitResult<()> {
+        dotenv().ok();
+        let api_key = std::env::var("BYBIT_API_KEY").expect("BYBIT_API_KEY");
+        let api_secret = std::env::var("BYBIT_API_SECRET").expect("BYBIT_API_SECRET");
+        let client = BybitHttp::new(api_key.to_string(), api_secret.to_string());
+        let res = client.get_positions().await;
+        println!("{:?}", res);
+        Ok(())
+    }
+}

@@ -30,14 +30,14 @@ impl BybitHttp {
 
     pub async fn place_order(
         &self,
-        cloid: &String,
+        _cloid: &String,
         symbol: &String,
         side: &String,
         price: &String,
         qty: &String,
     ) -> BybitResult<OrderResponse> {
         let mut params = Map::new();
-        params.insert("orderLinkId".to_string(), json!(cloid));
+        // params.insert("orderLinkId".to_string(), json!(cloid));
         params.insert("category".to_string(), json!("linear"));
         params.insert("symbol".to_string(), json!(symbol));
         params.insert("side".to_string(), json!(side));
@@ -96,35 +96,46 @@ impl BybitHttp {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use dotenv::dotenv;
 
     #[tokio::test]
-    async fn test() -> BybitResult<()> {
+    async fn test_place_order() -> BybitResult<()> {
+        dotenv().ok();
         let api_key = std::env::var("BYBIT_API_KEY").expect("BYBIT_API_KEY");
         let api_secret = std::env::var("BYBIT_API_SECRET").expect("BYBIT_API_SECRET");
-        let bybit = BybitHttp::new(api_key.to_string(), api_secret.to_string());
+        let client = BybitHttp::new(api_key.to_string(), api_secret.to_string());
+        let res = client
+            .place_order(
+                &"".to_string(),
+                &"SOLUSDT".to_string(),
+                &"Buy".to_string(),
+                &"110".to_string(),
+                &"0.1".to_string(),
+            )
+            .await;
+        println!("{:?}", res);
+        Ok(())
+    }
 
-        // let account_info = bybit.get_account_info().await?;
-        // println!("{:?}", account_info);
+    #[tokio::test]
+    async fn test_get_open_order() -> BybitResult<()> {
+        dotenv().ok();
+        let api_key = std::env::var("BYBIT_API_KEY").expect("BYBIT_API_KEY");
+        let api_secret = std::env::var("BYBIT_API_SECRET").expect("BYBIT_API_SECRET");
+        let client = BybitHttp::new(api_key.to_string(), api_secret.to_string());
+        let res = client.get_open_order(&"SOLUSDT".to_string(), None).await;
+        println!("{:?}", res);
+        Ok(())
+    }
 
-        // println!(
-        //     "{:?}",
-        //     bybit.get_open_order(&"SOLUSDT".to_string(), None).await?
-        // );
-
-        // println!("{:?}", bybit.get_orderbook(&"SOLUSDT".to_string()).await?);
-        // println!("{:?}", bybit.get_orderbook(&"SOLUSDTs".to_string()).await?);
-
-        println!(
-            "{:?}",
-            bybit
-                .amend_order(
-                    &"SOLUSDsT".to_string(),
-                    &"123".to_string(),
-                    &"123.74".to_string()
-                )
-                .await?
-        );
-
+    #[tokio::test]
+    async fn test_cancel_all_orders() -> BybitResult<()> {
+        dotenv().ok();
+        let api_key = std::env::var("BYBIT_API_KEY").expect("BYBIT_API_KEY");
+        let api_secret = std::env::var("BYBIT_API_SECRET").expect("BYBIT_API_SECRET");
+        let client = BybitHttp::new(api_key.to_string(), api_secret.to_string());
+        let res = client.cancel_all_orders(&"SOLUSDT".to_string()).await;
+        println!("{:?}", res);
         Ok(())
     }
 }

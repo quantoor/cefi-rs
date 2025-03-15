@@ -28,7 +28,7 @@ pub struct BybitHttpResponse {
     pub ret_code: i64,
     pub ret_msg: String,
     pub result: Value,
-    pub ret_ext_info: Value,
+    pub ret_ext_info: Option<Value>,
     pub time: Option<u64>,
 }
 
@@ -60,8 +60,8 @@ pub struct GetOrderResponseData {
     pub reject_reason: String,
     pub leaves_qty: String,
     pub cum_exec_qty: String,
-    pub created_time: u64,
-    pub updated_time: u64,
+    pub created_time: String,
+    pub updated_time: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

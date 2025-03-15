@@ -26,3 +26,6 @@ tokio-tungstenite = { version = "0.23.1", features = ["native-tls"] }
 tracing = "0.1.40"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 tracing-appender = "0.2.3"
+
+[dev-dependencies]
+dotenv = { workspace = true }
