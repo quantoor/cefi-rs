@@ -1,3 +1,5 @@
+#![allow(dead_code, unused_imports, unused_variables)]
+
 use crate::{errors::BinanceResult, types::ServerTimeResponse};
 use hmac::Hmac;
 use reqwest::{Client, RequestBuilder};
@@ -14,7 +16,7 @@ pub struct BinanceHttp {
 }
 
 impl BinanceHttp {
-    pub fn new(api_key: String, api_secret: String) -> Self {
+    pub(crate) fn new(api_key: String, api_secret: String) -> Self {
         Self {
             api_key,
             api_secret,
@@ -25,10 +27,24 @@ impl BinanceHttp {
         }
     }
 
-    async fn send_get_request<T>(&self, endpoint: &str) -> anyhow::Result<T>
+    fn generate_query_str(params: &HashMap<&str, &str>) -> String {
+        params
+            .iter()
+            .map(|(key, value)| format!("{}={}", key, value))
+            .collect::<Vec<String>>()
+            .join("&")
+    }
+
+    pub(crate) async fn send_get_request<T>(
+        &self,
+        endpoint: &str,
+        params: HashMap<&str, &str>,
+    ) -> anyhow::Result<T>
     where
         T: for<'a> serde::Deserialize<'a>,
     {
+        let query_str = Self::generate_query_str(&params);
+
         let response = self
             .client
             .get(format!("{}/{}", BINANCE_HOST_HOST, endpoint))
@@ -36,38 +52,6 @@ impl BinanceHttp {
             .await?;
         let body = response.text().await?;
         Ok(serde_json::from_str::<T>(&body)?)
-    }
-
-    pub async fn check_server_time(&self) -> anyhow::Result<ServerTimeResponse> {
-        let server_time = self
-            .send_get_request::<ServerTimeResponse>("fapi/v1/time")
-            .await?;
-        Ok(server_time)
-    }
-
-    pub async fn get_exchange_info(&self) -> anyhow::Result<()> {
-        let response = self
-            .client
-            .get(format!("{}/fapi/v1/exchangeInfo", BINANCE_HOST_HOST))
-            .send()
-            .await?;
-        let body = response.text().await?;
-        println!("body: {:?}", body);
-        Ok(())
-    }
-
-    pub async fn get_orderbook(&self) -> anyhow::Result<()> {
-        let response = self
-            .client
-            .get(format!(
-                "{}/fapi/v1/depth?symbol=BTCUSDT&limit=5",
-                BINANCE_HOST_HOST
-            ))
-            .send()
-            .await?;
-        let body = response.text().await?;
-        println!("body: {:?}", body);
-        Ok(())
     }
 
     // fn generate_get_signature(
@@ -195,28 +179,4 @@ impl BinanceHttp {
     // pub async fn get_account_info(&self) -> BinanceResult<BybitAccountInfo> {
     //     todo!()
     // }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[tokio::test]
-    async fn check_server_time() {
-        let binance_http = BinanceHttp::new("api_key".to_string(), "api_secret".to_string());
-        let server_time = binance_http.check_server_time().await.unwrap();
-        println!("server_time: {:?}", server_time);
-    }
-
-    #[tokio::test]
-    async fn exchange_info() {
-        let binance_http = BinanceHttp::new("api_key".to_string(), "api_secret".to_string());
-        binance_http.get_exchange_info().await.unwrap();
-    }
-
-    #[tokio::test]
-    async fn get_orderbook() {
-        let binance_http = BinanceHttp::new("api_key".to_string(), "api_secret".to_string());
-        binance_http.get_orderbook().await.unwrap();
-    }
 }
