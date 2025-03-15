@@ -167,6 +167,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "cefi-rs"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "binance",
+ "bybit",
+ "chrono",
+ "futures",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "strum",
+ "strum_macros",
+ "tokio",
+ "tokio-tungstenite",
+ "tracing",
+ "tracing-appender",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "cfg-if"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

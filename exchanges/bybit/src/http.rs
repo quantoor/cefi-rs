@@ -5,10 +5,9 @@ use crate::{
 use chrono::Utc;
 use hmac::{Hmac, Mac};
 use reqwest::{Client, RequestBuilder};
-use serde_json::{Map, Value, json};
+use serde_json::{Map, Value};
 use sha2::Sha256;
 use std::collections::HashMap;
-use tracing::debug;
 
 static BYBIT_HOST: &'static str = "https://api.bybit.com";
 static RECV_WINDOW: &'static str = "5000";
@@ -20,7 +19,7 @@ pub struct BybitHttp {
 }
 
 impl BybitHttp {
-    pub fn new(api_key: String, api_secret: String) -> Self {
+    pub(crate) fn new(api_key: String, api_secret: String) -> Self {
         Self {
             api_key,
             api_secret,
@@ -88,7 +87,7 @@ impl BybitHttp {
             .header("Content-Type", "application/json")
     }
 
-    async fn send_get_request<T>(
+    pub(crate) async fn send_get_request<T>(
         &self,
         endpoint: &str,
         params: HashMap<&str, &str>,
@@ -130,7 +129,7 @@ impl BybitHttp {
         }
     }
 
-    async fn send_post_request<T>(
+    pub(crate) async fn send_post_request<T>(
         &self,
         endpoint: &str,
         params: Map<String, Value>,
@@ -164,184 +163,6 @@ impl BybitHttp {
                 Ok(res)
             }
             _ => Err(BybitError::ApiError(res.ret_code, res.ret_msg)),
-        }
-    }
-
-    pub async fn get_open_order(
-        &self,
-        symbol: &String,
-        cloid: Option<String>,
-    ) -> BybitResult<GetOrderResponse> {
-        let mut params = HashMap::new();
-        params.insert("category", "linear");
-        params.insert("symbol", symbol);
-        params.insert("settleCoin", "USDT");
-        let cloid_value: String;
-        if let Some(cloid) = cloid {
-            cloid_value = cloid;
-            params.insert("orderLinkId", cloid_value.as_str());
-        }
-
-        self.send_get_request::<GetOrderResponse>("v5/order/realtime", params, true)
-            .await
-    }
-
-    pub async fn place_order(
-        &self,
-        cloid: &String,
-        symbol: &String,
-        side: &String,
-        price: &String,
-        qty: &String,
-    ) -> BybitResult<OrderResponse> {
-        let mut params = Map::new();
-        params.insert("orderLinkId".to_string(), json!(cloid));
-        params.insert("category".to_string(), json!("linear"));
-        params.insert("symbol".to_string(), json!(symbol));
-        params.insert("side".to_string(), json!(side));
-        params.insert("positionIdx".to_string(), json!(0));
-        params.insert("orderType".to_string(), json!("Limit"));
-        params.insert("qty".to_string(), json!(qty));
-        params.insert("price".to_string(), json!(price));
-        params.insert("timeInForce".to_string(), json!("GTC"));
-        debug!("placing order with parameters {:?}", params);
-
-        self.send_post_request::<OrderResponse>("v5/order/create", params)
-            .await
-    }
-
-    pub async fn cancel_order(
-        &self,
-        symbol: &String,
-        cloid: &String,
-    ) -> BybitResult<OrderResponse> {
-        let mut params = Map::new();
-        params.insert("category".to_string(), json!("linear"));
-        params.insert("symbol".to_string(), json!(symbol));
-        params.insert("orderLinkId".to_string(), json!(cloid));
-
-        self.send_post_request::<OrderResponse>("v5/order/cancel", params)
-            .await
-    }
-
-    pub async fn cancel_all_orders(&self, symbol: &String) -> BybitResult<CancelAllOrdersResponse> {
-        let mut params = Map::new();
-        params.insert("category".to_string(), json!("linear"));
-        params.insert("symbol".to_string(), json!(symbol));
-
-        self.send_post_request::<CancelAllOrdersResponse>("v5/order/cancel-all", params)
-            .await
-    }
-
-    pub async fn amend_order(
-        &self,
-        symbol: &String,
-        cloid: &String,
-        price: &String,
-        // qty: &String,
-    ) -> BybitResult<OrderResponse> {
-        let mut params = Map::new();
-        params.insert("category".to_string(), json!("linear"));
-        params.insert("orderLinkId".to_string(), json!(cloid));
-        params.insert("symbol".to_string(), json!(symbol));
-        params.insert("price".to_string(), json!(price));
-        // params.insert("qty".to_string(), json!(qty));
-        debug!("amending order with parameters {:?}", params);
-
-        self.send_post_request::<OrderResponse>("v5/order/amend", params)
-            .await
-    }
-
-    pub async fn get_orderbook(&self, symbol: &String) -> BybitResult<OrderbookResponse> {
-        let mut params = HashMap::new();
-        params.insert("category", "linear");
-        params.insert("symbol", symbol);
-        params.insert("limit", "5");
-
-        self.send_get_request::<OrderbookResponse>("v5/market/orderbook", params, false)
-            .await
-    }
-
-    pub async fn get_positions(&self) -> BybitResult<GetPositionResponse> {
-        let mut params = HashMap::new();
-        params.insert("category", "linear");
-        params.insert("settleCoin", "USDT");
-        params.insert("limit", "200");
-
-        self.send_get_request::<GetPositionResponse>("v5/position/list", params, true)
-            .await
-    }
-
-    pub async fn get_tickers(&self) -> BybitResult<GetTickersResponse> {
-        let mut params = HashMap::new();
-        params.insert("category", "linear");
-
-        self.send_get_request::<GetTickersResponse>("v5/market/tickers", params, false)
-            .await
-    }
-
-    pub async fn get_wallet_balance(&self) -> BybitResult<GetWalletBalanceResponse> {
-        // https://bybit-exchange.github.io/docs/v5/account/wallet-balance
-        let mut params = HashMap::new();
-        params.insert("accountType", "UNIFIED");
-
-        self.send_get_request::<GetWalletBalanceResponse>("v5/account/wallet-balance", params, true)
-            .await
-    }
-
-    pub async fn get_account_info(&self) -> BybitResult<BybitAccountInfo> {
-        self.send_get_request::<BybitAccountInfo>("v5/account/info", HashMap::new(), true)
-            .await
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    // #[tokio::test]
-    // async fn test_connector_get_tickers() {
-    //     let client = BybitHttp::new("".into(), "".into());
-    //     let tickers = client.get_tickers().await.unwrap();
-    //     println!("{:?}", tickers);
-    // }
-
-    // #[tokio::test]
-    // async fn get_account_info() {
-    //     let client = BybitHttp::new("".into(), "".into());
-    //     let account_info = client.get_account_info().await.unwrap();
-    //     println!("{:?}", account_info);
-    // }
-
-    #[test]
-    fn test_deserialize() {
-        let res = r#"{
-            "retCode": 0,
-            "retMsg": "OK",
-            "result": {
-                "list": [
-                    {
-                        "orderId": "1616024329462743808",
-                        "orderLinkId": "1616024329462743809"
-                    },
-                    {
-                        "orderId": "1616024287544869632",
-                        "orderLinkId": "1616024287544869633"
-                    }
-                ],
-                "success": "1"
-            },
-            "retExtInfo": {},
-            "time": 1707381118116
-        }"#;
-        let res = serde_json::from_str::<BybitHttpResponse>(res).unwrap();
-        match res.ret_code {
-            0 => {
-                let value_str = &res.result.to_string();
-                let res = serde_json::from_str::<CancelAllOrdersResponse>(value_str).unwrap();
-                println!("{:?}", res.list)
-            }
-            _ => panic!(""),
         }
     }
 }

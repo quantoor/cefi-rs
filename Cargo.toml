@@ -1,5 +1,5 @@
 [workspace]
-members = ["exchanges/*"]
+members = [ "cefi-rs","exchanges/*"]
 resolver = "2"
 
 [workspace.dependencies]
