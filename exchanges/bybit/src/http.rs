@@ -19,7 +19,7 @@ pub struct BybitHttp {
 }
 
 impl BybitHttp {
-    pub(crate) fn new(api_key: String, api_secret: String) -> Self {
+    pub fn new(api_key: String, api_secret: String) -> Self {
         Self {
             api_key,
             api_secret,
