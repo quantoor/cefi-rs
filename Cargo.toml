@@ -1,0 +1,5 @@
+[workspace]
+members = ["exchanges/*"]
+resolver = "2"
+
+[workspace.dependencies]
