@@ -1,10 +1,14 @@
+use crate::{
+    interface_http::InterfaceHttp,
+    trade::*,
+    types::{Orderbook, OrderbookLevel},
+};
 use async_trait::async_trait;
 use binance::{
     http::BinanceHttp,
     rest::market::{check_server_time, get_orderbook},
+    types::OrderBook as BinanceOrderBook,
 };
-
-use crate::{interface_http::InterfaceHttp, trade::*, types::Orderbook};
 
 pub struct BinanceHttpWrapper {
     http: BinanceHttp,
@@ -61,6 +65,31 @@ impl InterfaceHttp for BinanceHttpWrapper {
     }
 }
 
+impl Orderbook {
+    fn from_binance_orderbook(orderbook: BinanceOrderBook, symbol: String) -> Self {
+        Orderbook {
+            symbol: symbol,
+            asks: orderbook
+                .asks
+                .into_iter()
+                .map(|ask| OrderbookLevel {
+                    price: ask[0].parse::<f64>().unwrap(),
+                    amount: ask[1].parse::<f64>().unwrap(),
+                })
+                .collect(),
+            bids: orderbook
+                .bids
+                .into_iter()
+                .map(|bid| OrderbookLevel {
+                    price: bid[0].parse::<f64>().unwrap(),
+                    amount: bid[1].parse::<f64>().unwrap(),
+                })
+                .collect(),
+            timestamp_ms: orderbook.event_time,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::exchanges::binance::BinanceHttpWrapper;
@@ -71,7 +100,7 @@ mod tests {
     async fn test_get_orderbook() {
         let binance = BinanceHttpWrapper::new("".to_string(), "".to_string());
         let orderbook = binance
-            .get_orderbook(&"BTCUSDT".to_string(), Some(10))
+            .get_orderbook(&"BTCUSDT".to_string(), Some(5))
             .await
             .unwrap();
         println!("orderbook: {:?}", orderbook);

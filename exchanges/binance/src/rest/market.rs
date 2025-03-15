@@ -20,14 +20,13 @@ pub async fn get_exchange_info(client: &BinanceHttp) -> anyhow::Result<ExchangeI
 pub async fn get_orderbook(
     client: &BinanceHttp,
     symbol: &String,
-    _limit: Option<i32>,
+    limit: Option<i32>,
 ) -> anyhow::Result<OrderBook> {
+    let limit = limit.unwrap_or(5).to_string();
+
     let mut params = HashMap::new();
     params.insert("symbol", symbol.as_str());
-    // if let Some(lim) = limit {
-    //     let limit_str = lim.to_string().clone();
-    //     params.insert("limit", limit_str.as_str());
-    // }
+    params.insert("limit", limit.as_str());
 
     let response = client
         .send_get_request::<OrderBook>("fapi/v1/depth", params)

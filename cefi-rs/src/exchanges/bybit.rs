@@ -1,7 +1,10 @@
 use async_trait::async_trait;
-use bybit::{http::BybitHttp, rest::market::get_server_time};
+use bybit::{http::BybitHttp, rest::market::get_server_time, rest::market::OrderbookResponse};
 
-use crate::{interface_http::InterfaceHttp, trade::*, types::Orderbook};
+use crate::{
+    interface_http::InterfaceHttp,
+    types::{Orderbook, OrderbookLevel},
+};
 
 pub struct BybitHttpWrapper {
     http: BybitHttp,
@@ -32,27 +35,73 @@ impl InterfaceHttp for BybitHttpWrapper {
         symbol: &String,
         limit: Option<i32>,
     ) -> anyhow::Result<Orderbook> {
+        let orderbook = bybit::rest::market::get_orderbook(
+            &self.http,
+            "linear".to_string(),
+            symbol.to_string(),
+            limit.unwrap_or(10),
+        )
+        .await
+        .map_err(|e| anyhow::anyhow!("{}", e))?;
+
+        Ok(Orderbook::from_bybit_orderbook(
+            orderbook,
+            symbol.to_string(),
+        ))
+    }
+
+    async fn place_order(
+        &self,
+        params: &crate::trade::PlaceOrderParams,
+    ) -> anyhow::Result<crate::trade::PlaceOrderResponse> {
         todo!()
     }
 
-    async fn place_order(&self, params: &PlaceOrderParams) -> anyhow::Result<PlaceOrderResponse> {
+    async fn cancel_order(
+        &self,
+        order_id: &String,
+    ) -> anyhow::Result<crate::trade::CancelOrderResponse> {
         todo!()
     }
 
-    async fn cancel_order(&self, order_id: &String) -> anyhow::Result<CancelOrderResponse> {
-        todo!()
-    }
-
-    async fn cancel_all_orders(&self, symbol: &String) -> anyhow::Result<CancelAllOrdersResponse> {
+    async fn cancel_all_orders(
+        &self,
+        symbol: &String,
+    ) -> anyhow::Result<crate::trade::CancelAllOrdersResponse> {
         todo!()
     }
 
     async fn amend_order(
         &self,
         order_id: &String,
-        params: &AmendOrderParams,
-    ) -> anyhow::Result<AmendOrderResponse> {
+        params: &crate::trade::AmendOrderParams,
+    ) -> anyhow::Result<crate::trade::AmendOrderResponse> {
         todo!()
+    }
+}
+
+impl Orderbook {
+    fn from_bybit_orderbook(orderbook: OrderbookResponse, symbol: String) -> Self {
+        Orderbook {
+            symbol: symbol,
+            asks: orderbook
+                .asks
+                .into_iter()
+                .map(|ask| OrderbookLevel {
+                    price: ask[0].parse::<f64>().unwrap(),
+                    amount: ask[1].parse::<f64>().unwrap(),
+                })
+                .collect(),
+            bids: orderbook
+                .bids
+                .into_iter()
+                .map(|bid| OrderbookLevel {
+                    price: bid[0].parse::<f64>().unwrap(),
+                    amount: bid[1].parse::<f64>().unwrap(),
+                })
+                .collect(),
+            timestamp_ms: orderbook.timestamp,
+        }
     }
 }
 
