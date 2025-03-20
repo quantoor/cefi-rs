@@ -4,7 +4,7 @@ use binance::{
     rest::market::{check_server_time, get_orderbook},
 };
 
-use crate::{interface_http::InterfaceHttp, types::Orderbook};
+use crate::{interface_http::InterfaceHttp, trade::*, types::Orderbook};
 
 pub struct BinanceHttpWrapper {
     http: BinanceHttp,
@@ -32,10 +32,31 @@ impl InterfaceHttp for BinanceHttpWrapper {
         symbol: &String,
         limit: Option<i32>,
     ) -> anyhow::Result<Orderbook> {
-        let orderbooks = get_orderbook(&self.http, symbol, limit)
+        let orderbook = get_orderbook(&self.http, symbol, limit)
             .await
             .map_err(|e| anyhow::anyhow!("{}", e))?;
 
+        todo!()
+        // Ok(orderbook)
+    }
+
+    async fn place_order(&self, params: &PlaceOrderParams) -> anyhow::Result<PlaceOrderResponse> {
+        todo!()
+    }
+
+    async fn cancel_order(&self, order_id: &String) -> anyhow::Result<CancelOrderResponse> {
+        todo!()
+    }
+
+    async fn cancel_all_orders(&self, symbol: &String) -> anyhow::Result<CancelAllOrdersResponse> {
+        todo!()
+    }
+
+    async fn amend_order(
+        &self,
+        order_id: &String,
+        params: &AmendOrderParams,
+    ) -> anyhow::Result<AmendOrderResponse> {
         todo!()
     }
 }

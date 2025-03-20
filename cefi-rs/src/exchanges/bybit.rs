@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use bybit::{http::BybitHttp, rest::market::get_server_time};
 
-use crate::{interface_http::InterfaceHttp, types::Orderbook};
+use crate::{interface_http::InterfaceHttp, trade::*, types::Orderbook};
 
 pub struct BybitHttpWrapper {
     http: BybitHttp,
@@ -32,6 +32,26 @@ impl InterfaceHttp for BybitHttpWrapper {
         symbol: &String,
         limit: Option<i32>,
     ) -> anyhow::Result<Orderbook> {
+        todo!()
+    }
+
+    async fn place_order(&self, params: &PlaceOrderParams) -> anyhow::Result<PlaceOrderResponse> {
+        todo!()
+    }
+
+    async fn cancel_order(&self, order_id: &String) -> anyhow::Result<CancelOrderResponse> {
+        todo!()
+    }
+
+    async fn cancel_all_orders(&self, symbol: &String) -> anyhow::Result<CancelAllOrdersResponse> {
+        todo!()
+    }
+
+    async fn amend_order(
+        &self,
+        order_id: &String,
+        params: &AmendOrderParams,
+    ) -> anyhow::Result<AmendOrderResponse> {
         todo!()
     }
 }

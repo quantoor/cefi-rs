@@ -1,13 +1,25 @@
 use async_trait::async_trait;
 
-use crate::types::Orderbook;
+use crate::{trade::*, types::Orderbook};
 
 #[async_trait]
 pub trait InterfaceHttp {
     async fn get_server_time(&self) -> anyhow::Result<u64>;
 
     async fn get_orderbook(&self, symbol: &String, limit: Option<i32>)
-    -> anyhow::Result<Orderbook>;
+        -> anyhow::Result<Orderbook>;
+
+    async fn place_order(&self, params: &PlaceOrderParams) -> anyhow::Result<PlaceOrderResponse>;
+
+    async fn cancel_order(&self, order_id: &String) -> anyhow::Result<CancelOrderResponse>;
+
+    async fn cancel_all_orders(&self, symbol: &String) -> anyhow::Result<CancelAllOrdersResponse>;
+
+    async fn amend_order(
+        &self,
+        order_id: &String,
+        params: &AmendOrderParams,
+    ) -> anyhow::Result<AmendOrderResponse>;
 }
 
 #[cfg(test)]
