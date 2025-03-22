@@ -22,5 +22,5 @@ tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
 tracing-appender = { workspace = true }
 
-cefi-rs-binance = { path = "../exchanges/binance" }
-cefi-rs-bybit = { path = "../exchanges/bybit" }
+cefi-rs-binance = { path = "../exchanges/binance", version = "0.1.0" }
+cefi-rs-bybit = { path = "../exchanges/bybit", version = "0.1.0" }
