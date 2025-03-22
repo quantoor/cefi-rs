@@ -4,7 +4,7 @@ use crate::{
     types::{Orderbook, OrderbookLevel},
 };
 use async_trait::async_trait;
-use binance::{http::BinanceHttp, types::OrderBook as BinanceOrderBook};
+use cefi_rs_binance::{http::BinanceHttp, types::OrderBook as BinanceOrderBook};
 
 pub struct BinanceHttpWrapper {
     client: BinanceHttp,

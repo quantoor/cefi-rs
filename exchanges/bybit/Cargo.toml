@@ -1,7 +1,10 @@
 [package]
-name = "bybit"
+name = "cefi-rs-bybit"
 version = "0.1.0"
-edition = "2021"
+authors = { workspace = true }
+edition = { workspace = true }
+repository = { workspace = true }
+license = { workspace = true }
 
 [profile.dev]
 debug = 0

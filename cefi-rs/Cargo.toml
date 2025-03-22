@@ -1,7 +1,10 @@
 [package]
 name = "cefi-rs"
 version = "0.1.0"
-edition = "2021"
+authors = { workspace = true }
+edition = { workspace = true }
+repository = { workspace = true }
+license = { workspace = true }
 
 [dependencies]
 anyhow = { workspace = true }
@@ -19,5 +22,5 @@ tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
 tracing-appender = { workspace = true }
 
-binance = { path = "../exchanges/binance" }
-bybit = { path = "../exchanges/bybit" }
+cefi-rs-binance = { path = "../exchanges/binance" }
+cefi-rs-bybit = { path = "../exchanges/bybit" }

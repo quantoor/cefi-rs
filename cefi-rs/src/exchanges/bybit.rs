@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use bybit::{http::BybitHttp, rest::market::OrderbookResponse};
+use cefi_rs_bybit::{http::BybitHttp, rest::market::OrderbookResponse};
 
 use crate::{
     interface_http::InterfaceHttp,

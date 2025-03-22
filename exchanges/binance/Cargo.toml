@@ -1,7 +1,10 @@
 [package]
-name = "binance"
+name = "cefi-rs-binance"
 version = "0.1.0"
-edition = "2021"
+authors = { workspace = true }
+edition = { workspace = true }
+repository = { workspace = true }
+license = { workspace = true }
 
 [dependencies]
 anyhow = { workspace = true }
