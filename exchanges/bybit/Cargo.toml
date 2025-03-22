@@ -1,6 +1,7 @@
 [package]
 name = "cefi-rs-bybit"
 version = "0.1.0"
+description = "cefi-rs-bybit"
 authors = { workspace = true }
 edition = { workspace = true }
 repository = { workspace = true }

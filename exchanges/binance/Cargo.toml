@@ -1,6 +1,7 @@
 [package]
 name = "cefi-rs-binance"
 version = "0.1.0"
+description = "cefi-rs-binance"
 authors = { workspace = true }
 edition = { workspace = true }
 repository = { workspace = true }
