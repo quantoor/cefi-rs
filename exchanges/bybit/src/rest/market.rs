@@ -12,6 +12,13 @@ pub struct ServerTimeResponse {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
+pub struct KlineResponse {
+    pub symbol: String,
+    pub list: Vec<Vec<String>>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct InstrumentsInfoResponse {
     pub category: String,
     pub list: Vec<InstrumentInfo>,
@@ -101,6 +108,33 @@ impl BybitHttp {
             .await
     }
 
+    pub async fn get_kline(
+        &self,
+        symbol: &str,
+        interval: &str,
+        category: Option<&str>,
+        start_ms: Option<i64>,
+        end_ms: Option<i64>,
+    ) -> BybitResult<KlineResponse> {
+        let mut url = format!(
+            "v5/market/kline?symbol={}&interval={}&limit=1000",
+            symbol.to_uppercase(),
+            interval
+        );
+        if let Some(category) = category {
+            url = format!("{}&category={}", url, category);
+        }
+        if let Some(start) = start_ms {
+            url = format!("{}&start={}", url, start);
+        }
+        if let Some(end) = end_ms {
+            url = format!("{}&end={}", url, end);
+        }
+
+        self.send_get_request::<KlineResponse>(&url, HashMap::new(), false)
+            .await
+    }
+
     pub async fn get_instruments_info(
         &self,
         category: String,
@@ -149,6 +183,13 @@ mod tests {
     async fn test_get_server_time() {
         let client = BybitHttp::new("".to_string(), "".to_string());
         let res = client.get_server_time().await;
+        println!("{:?}", res);
+    }
+
+    #[tokio::test]
+    async fn test_get_kline() {
+        let client = BybitHttp::new("".to_string(), "".to_string());
+        let res = client.get_kline("btcusdt", "5", None, None, None).await;
         println!("{:?}", res);
     }
 
